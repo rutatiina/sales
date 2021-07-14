@@ -1,9 +1,8 @@
 {
     "name": "rutatiina/sales",
-    "description": "",
+    "description": "Load all sales laravel packages",
     "type": "library",
-    "li
-    cense": "MIT",
+    "license": "MIT",
     "authors": [
         {
             "name": "Gilbert Rutatiina",
@@ -22,6 +21,6 @@
         "rutatiina/sales-order": "*",
         "rutatiina/invoice": "*",
         "rutatiina/payment-received": "*",
-        "rutatiina/crdit-note": "*"
+        "rutatiina/credit-note": "*"
     }
 }
