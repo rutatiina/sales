@@ -16,6 +16,7 @@
         "rutatiina/financial-accounting": "*",
         "rutatiina/tax": "*",
         "rutatiina/contact": "*",
+        "rutatiina/pos": "*",
         "rutatiina/estimate": "*",
         "rutatiina/retainer-invoice": "*",
         "rutatiina/sales-order": "*",
