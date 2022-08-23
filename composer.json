@@ -12,16 +12,16 @@
     "minimum-stability": "beta",
     "require": {
         "laravel/framework": "^8.0",
-        "rutatiina/tenant": "*",
-        "rutatiina/financial-accounting": "*",
-        "rutatiina/tax": "*",
-        "rutatiina/contact": "*",
-        "rutatiina/pos": "*",
-        "rutatiina/estimate": "*",
-        "rutatiina/retainer-invoice": "*",
-        "rutatiina/sales-order": "*",
-        "rutatiina/invoice": "*",
-        "rutatiina/payment-received": "*",
-        "rutatiina/credit-note": "*"
+        "rutatiina/tenant": "dev-main",
+        "rutatiina/financial-accounting": "dev-main",
+        "rutatiina/tax": "dev-main",
+        "rutatiina/contact": "dev-main",
+        "rutatiina/pos": "dev-main",
+        "rutatiina/estimate": "dev-main",
+        "rutatiina/retainer-invoice": "dev-main",
+        "rutatiina/sales-order": "dev-main",
+        "rutatiina/invoice": "dev-main",
+        "rutatiina/payment-received": "dev-main",
+        "rutatiina/credit-note": "dev-main"
     }
 }
