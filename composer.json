@@ -23,5 +23,17 @@
         "rutatiina/invoice": "dev-main",
         "rutatiina/payment-received": "dev-main",
         "rutatiina/credit-note": "dev-main"
+    },
+    "autoload": {
+        "psr-4": {
+            "Rutatiina\\Sales\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Rutatiina\\Sales\\SalesServiceProvider"
+            ]
+        }
     }
 }
