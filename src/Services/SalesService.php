@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Rutatiina\Sales\Models\Sale;
+use Rutatiina\Sales\Models\Sales;
 use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
 use Rutatiina\Sales\Models\SalesSetting;
@@ -21,10 +21,22 @@ class SalesService
         //
     }
 
+    public static function settings()
+    {
+        return SalesSetting::firstOrCreate([
+            'tenant_id' => session('tenant_id'),
+            'document_name' => 'Sales receipt',
+            'document_type' => 'receipt',
+            'number_prefix' => '',
+            'debit_financial_account_code' => 110100, //Cash and Cash Equivalents
+            'credit_financial_account_code' => 410100, //Sales Revenue
+        ]);
+    }
+
     public static function nextNumber()
     {
-        $count = Sale::count();
-        $settings = SalesSetting::first();
+        $count = Sales::count();
+        $settings = self::settings();
 
         return $settings->number_prefix . (str_pad(($count + 1), $settings->minimum_number_length, "0", STR_PAD_LEFT)) . $settings->number_postfix;
     }
@@ -33,7 +45,7 @@ class SalesService
     {
         $taxes = Tax::all()->keyBy('code');
 
-        $txn = Sale::findOrFail($id);
+        $txn = Sales::findOrFail($id);
         $txn->load('contact', 'items.taxes');
         $txn->setAppends(['taxes']);
 

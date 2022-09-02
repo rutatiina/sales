@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Rutatiina\Tenant\Scopes\TenantIdScope;
 
-class Sale extends Model
+class Sales extends Model
 {
     use LogsActivity;
 

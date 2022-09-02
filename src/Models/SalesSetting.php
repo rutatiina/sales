@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Rutatiina\Tenant\Scopes\TenantIdScope;
 
-class SaleSetting extends Model
+class SalesSetting extends Model
 {
     use LogsActivity;
 
@@ -18,7 +18,7 @@ class SaleSetting extends Model
 
     protected $connection = 'tenant';
 
-    protected $table = 'rg_sale_settings';
+    protected $table = 'rg_sales_settings';
 
     protected $primaryKey = 'id';
 

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Request as FacadesRequest;
-use Rutatiina\Sales\Models\Sale;
+use Rutatiina\Sales\Models\Sales;
 use Rutatiina\Item\Traits\ItemsSelect2DataTrait;
 use Rutatiina\Contact\Traits\ContactTrait;
 use Yajra\DataTables\Facades\DataTables;
@@ -36,7 +36,7 @@ class SalesController extends Controller
             return view('ui.limitless::layout_2-ltr-default.appVue');
         }
 
-        $query = Sale::query();
+        $query = Sales::query();
 
         if ($request->contact)
         {
@@ -63,7 +63,7 @@ class SalesController extends Controller
 
         $tenant = Auth::user()->tenant;
 
-        $txnAttributes = (new Sale())->rgGetAttributes();
+        $txnAttributes = (new Sales())->rgGetAttributes();
 
         $txnAttributes['tenant_id'] = $tenant->id;
         $txnAttributes['created_by'] = Auth::id();

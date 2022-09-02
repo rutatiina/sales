@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Rutatiina\Tenant\Scopes\TenantIdScope;
 
-class SaleLedger extends Model
+class SalesItemTax extends Model
 {
     use LogsActivity;
 
-    protected static $logName = 'Sale Ledger';
+    protected static $logName = 'Sale Item';
     protected static $logFillable = true;
     protected static $logAttributes = ['*'];
     protected static $logAttributesToIgnore = ['updated_at'];
@@ -18,7 +18,7 @@ class SaleLedger extends Model
 
     protected $connection = 'tenant';
 
-    protected $table = 'rg_sale_ledgers';
+    protected $table = 'rg_sales_item_taxes';
 
     protected $primaryKey = 'id';
 
@@ -36,9 +36,29 @@ class SaleLedger extends Model
         static::addGlobalScope(new TenantIdScope);
     }
 
+    public function getTaxesAttribute($value)
+    {
+        $_array_ = json_decode($value);
+        if (is_array($_array_)) {
+            return $_array_;
+        } else {
+            return [];
+        }
+    }
+
+    public function tax()
+    {
+        return $this->hasOne('Rutatiina\Tax\Models\Tax', 'code', 'tax_code');
+    }
+
     public function invoice()
     {
-        return $this->belongsTo('Rutatiina\Sales\Models\Sale', 'sale_id');
+        return $this->belongsTo('Rutatiina\Sales\Models\Sale', 'sale_id', 'id');
+    }
+
+    public function invoice_item()
+    {
+        return $this->belongsTo('Rutatiina\Sales\Models\SaleItem', 'sale_item_id', 'id');
     }
 
 }
