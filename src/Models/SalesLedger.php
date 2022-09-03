@@ -38,7 +38,7 @@ class SalesLedger extends Model
 
     public function invoice()
     {
-        return $this->belongsTo('Rutatiina\Sales\Models\Sale', 'sale_id');
+        return $this->belongsTo('Rutatiina\Sales\Models\Sale', 'sales_id');
     }
 
 }

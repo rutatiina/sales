@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Rutatiina\Tenant\Scopes\TenantIdScope;
 
-class SaleItem extends Model
+class SalesItem extends Model
 {
     use LogsActivity;
 
@@ -23,6 +23,10 @@ class SaleItem extends Model
     protected $primaryKey = 'id';
 
     protected $guarded = ['id'];
+
+    protected $casts = [
+        'item_id' => 'integer',
+    ];
 
     /**
      * The "booting" method of the model.
@@ -48,12 +52,12 @@ class SaleItem extends Model
 
     public function invoice()
     {
-        return $this->belongsTo('Rutatiina\Sales\Models\Sale', 'sale_id');
+        return $this->belongsTo('Rutatiina\Sales\Models\Sale', 'sales_id');
     }
 
     public function taxes()
     {
-        return $this->hasMany('Rutatiina\Sales\Models\SaleItemTax', 'sale_item_id', 'id');
+        return $this->hasMany('Rutatiina\Sales\Models\SalesItemTax', 'sales_item_id', 'id');
     }
 
 }

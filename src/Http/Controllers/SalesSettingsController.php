@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Rutatiina\Sales\Models\SaleSetting;
+use Rutatiina\Sales\Models\SalesSetting;
 use Rutatiina\FinancialAccounting\Traits\FinancialAccountingTrait;
 use Rutatiina\Item\Traits\ItemsVueSearchSelect;
 use Yajra\DataTables\Facades\DataTables;
@@ -37,7 +37,7 @@ class SalesSettingsController extends Controller
 
         return [
             'financial_accounts' => Account::all(),
-            'settings' => SaleSetting::first()
+            'settings' => SalesSetting::first()
         ];
     }
 
@@ -65,7 +65,7 @@ class SalesSettingsController extends Controller
         }
 
         //save data posted
-        $settings = SaleSetting::first();
+        $settings = SalesSetting::first();
         $settings->document_name = $request->document_name;
         $settings->number_prefix = $request->number_prefix;
         $settings->number_postfix = $request->number_postfix;

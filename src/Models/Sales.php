@@ -2,13 +2,16 @@
 
 namespace Rutatiina\Sales\Models;
 
+use Bkwld\Cloner\Cloneable;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Rutatiina\Tenant\Scopes\TenantIdScope;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Rutatiina\Sales\Scopes\StatusEditedScope;
 
 class Sales extends Model
 {
     use LogsActivity;
+    use Cloneable;
 
     protected static $logName = 'Sale';
     protected static $logFillable = true;
@@ -23,6 +26,14 @@ class Sales extends Model
     protected $primaryKey = 'id';
 
     protected $guarded = [];
+
+    protected $casts = [
+        'contact_id' => 'integer',
+    ];
+
+    protected $cloneable_relations = [
+        'comments',
+    ];
 
     /**
      * The attributes that should be hidden for arrays.
@@ -50,6 +61,7 @@ class Sales extends Model
         parent::boot();
 
         static::addGlobalScope(new TenantIdScope);
+        static::addGlobalScope(new StatusEditedScope);
 
         self::deleting(function($txn) { // before delete() method call this
              $txn->items()->each(function($row) {
@@ -158,17 +170,17 @@ class Sales extends Model
 
     public function items()
     {
-        return $this->hasMany('Rutatiina\Sales\Models\SalesItem', 'sale_id')->orderBy('id', 'asc');
+        return $this->hasMany('Rutatiina\Sales\Models\SalesItem', 'sales_id')->orderBy('id', 'asc');
     }
 
     public function ledgers()
     {
-        return $this->hasMany('Rutatiina\Sales\Models\SaleLedger', 'sale_id')->orderBy('id', 'asc');
+        return $this->hasMany('Rutatiina\Sales\Models\SalesLedger', 'sales_id')->orderBy('id', 'asc');
     }
 
     public function comments()
     {
-        return $this->hasMany('Rutatiina\Sales\Models\InvoiceComment', 'sale_id')->latest();
+        return $this->hasMany('Rutatiina\Sales\Models\SalesComment', 'sales_id')->latest();
     }
 
     public function contact()
@@ -178,12 +190,12 @@ class Sales extends Model
 
     public function annexes()
     {
-        return $this->hasMany('Rutatiina\Sales\Models\Annex', 'sale_id', 'id');
+        return $this->hasMany('Rutatiina\Sales\Models\Annex', 'sales_id', 'id');
     }
 
     public function item_taxes()
     {
-        return $this->hasMany('Rutatiina\Sales\Models\SaleItemTax', 'sale_id', 'id');
+        return $this->hasMany('Rutatiina\Sales\Models\SalesItemTax', 'sales_id', 'id');
     }
 
     public function getTaxesAttribute()

@@ -24,6 +24,11 @@ class SalesItemTax extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'sales_id' => 'integer',
+        'sales_item_id' => 'integer',
+    ];
+
     /**
      * The "booting" method of the model.
      *
@@ -53,12 +58,12 @@ class SalesItemTax extends Model
 
     public function invoice()
     {
-        return $this->belongsTo('Rutatiina\Sales\Models\Sale', 'sale_id', 'id');
+        return $this->belongsTo('Rutatiina\Sales\Models\Sale', 'sales_id', 'id');
     }
 
     public function invoice_item()
     {
-        return $this->belongsTo('Rutatiina\Sales\Models\SaleItem', 'sale_item_id', 'id');
+        return $this->belongsTo('Rutatiina\Sales\Models\SalesItem', 'sales_item_id', 'id');
     }
 
 }

@@ -47,6 +47,7 @@ class SalesController extends Controller
         }
 
         $txns = $query->latest()->paginate($request->input('per_page', 20));
+        $txns->load('items');
 
         return [
             'tableData' => $txns
@@ -101,9 +102,9 @@ class SalesController extends Controller
         ];
 
         return [
-            'pageTitle' => 'Create Sales', #required
+            'pageTitle' => 'Record Sales', #required
             'pageAction' => 'Create', #required
-            'txnUrlStore' => '/invoices', #required
+            'txnUrlStore' => '/sales', #required
             'txnAttributes' => $txnAttributes, #required
         ];
     }
@@ -136,7 +137,7 @@ class SalesController extends Controller
             return view('ui.limitless::layout_2-ltr-default.appVue');
         }
 
-        $txn = Sale::findOrFail($id);
+        $txn = Sales::findOrFail($id);
         $txn->load('contact', 'items.taxes', 'ledgers');
         $txn->setAppends([
             'taxes',
@@ -191,14 +192,12 @@ class SalesController extends Controller
 
     public function destroy($id)
     {
-        $destroy = SalesService::destroy($id);
-
-        if ($destroy)
+        if (SalesService::destroy($id))
         {
             return [
                 'status' => true,
                 'messages' => ['Sale deleted'],
-                'callback' => URL::route('invoices.index', [], false)
+                'callback' => URL::route('sales.index', [], false)
             ];
         }
         else
@@ -292,6 +291,32 @@ class SalesController extends Controller
         //$books->load('author', 'publisher'); //of no use
 
         return $export;
+    }
+
+    public function routes()
+    {
+        return [
+            'delete' => route('sales.delete'),
+            'cancel' => route('sales.cancel'),
+        ];
+    }
+
+    public function delete(Request $request)
+    {
+        if (SalesService::destroyMany($request->ids))
+        {
+            return [
+                'status' => true,
+                'messages' => [count($request->ids) . ' Sales deleted.'],
+            ];
+        }
+        else
+        {
+            return [
+                'status' => false,
+                'messages' => SalesService::$errors
+            ];
+        }
     }
 
 }

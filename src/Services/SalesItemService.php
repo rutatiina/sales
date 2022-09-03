@@ -2,8 +2,8 @@
 
 namespace Rutatiina\Sales\Services;
 
-use Rutatiina\Sales\Models\SaleItem;
-use Rutatiina\Sales\Models\SaleItemTax;
+use Rutatiina\Sales\Models\SalesItem;
+use Rutatiina\Sales\Models\SalesItemTax;
 
 class SalesItemService
 {
@@ -21,20 +21,20 @@ class SalesItemService
         //Save the items >> $data['items']
         foreach ($data['items'] as &$item)
         {
-            $item['invoice_id'] = $data['id'];
+            $item['sales_id'] = $data['id'];
 
             $itemTaxes = (is_array($item['taxes'])) ? $item['taxes'] : [] ;
             unset($item['taxes']);
 
-            $itemModel = SaleItem::create($item);
+            $itemModel = SalesItem::create($item);
 
             foreach ($itemTaxes as $tax)
             {
                 //save the taxes attached to the item
-                $itemTax = new SaleItemTax;
+                $itemTax = new SalesItemTax;
                 $itemTax->tenant_id = $item['tenant_id'];
-                $itemTax->invoice_id = $item['invoice_id'];
-                $itemTax->invoice_item_id = $itemModel->id;
+                $itemTax->sales_id = $item['sales_id'];
+                $itemTax->sales_item_id = $itemModel->id;
                 $itemTax->tax_code = $tax['code'];
                 $itemTax->amount = $tax['total'];
                 $itemTax->inclusive = $tax['inclusive'];

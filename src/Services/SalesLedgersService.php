@@ -1,12 +1,12 @@
 <?php
 
-namespace Rutatiina\Invoice\Services;
+namespace Rutatiina\Sales\Services;
 
-use Rutatiina\Invoice\Models\InvoiceItem;
-use Rutatiina\Invoice\Models\InvoiceItemTax;
-use Rutatiina\Invoice\Models\InvoiceLedger;
+use Rutatiina\Sales\Models\SalesItem;
+use Rutatiina\Sales\Models\SalesItemTax;
+use Rutatiina\Sales\Models\SalesLedger;
 
-class InvoiceLedgersService
+class SalesLedgersService
 {
     public static $errors = [];
 
@@ -19,8 +19,8 @@ class InvoiceLedgersService
     {
         foreach ($data['ledgers'] as &$ledger)
         {
-            $ledger['invoice_id'] = $data['id'];
-            InvoiceLedger::create($ledger);
+            $ledger['sales_id'] = $data['id'];
+            SalesLedger::create($ledger);
         }
         unset($ledger);
 

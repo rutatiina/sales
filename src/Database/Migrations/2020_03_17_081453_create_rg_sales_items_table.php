@@ -32,11 +32,11 @@ class CreateRgSalesItemsTable extends Migration
             $table->unsignedBigInteger('credit_financial_account_code')->nullable(); //the financial account to credit in case of multiple sales accounts
             $table->string('name', 100);
             $table->string('description', 250)->nullable();
-            $table->unsignedInteger('quantity');
+            $table->decimal('quantity', 61,4);
             $table->unsignedDecimal('rate', 20,5);
             $table->unsignedDecimal('total', 20, 5);
             $table->unsignedDecimal('discount_amount', 20, 5)->nullable();
-            $table->unsignedInteger('units')->nullable();
+            $table->decimal('units', 61, 4)->nullable();
             // $table->string('batch', 100)->nullable();
             // $table->date('expiry')->nullable();
 

@@ -2,15 +2,17 @@
 
 namespace Rutatiina\Sales\Services;
 
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Rutatiina\Tax\Models\Tax;
 use Rutatiina\Sales\Models\Sales;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Rutatiina\Sales\Models\SalesSetting;
+use Rutatiina\GoodsReceived\Services\GoodsReceivedInvetoryService;
+use Rutatiina\GoodsDelivered\Services\GoodsDeliveredInventoryService;
 use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
-use Rutatiina\Sales\Models\SalesSetting;
-use Rutatiina\Tax\Models\Tax;
 
 class SalesService
 {
@@ -49,14 +51,16 @@ class SalesService
         $txn->load('contact', 'items.taxes');
         $txn->setAppends(['taxes']);
 
+        $contact = $txn->contact;
+
         $attributes = $txn->toArray();
 
         //print_r($attributes); exit;
 
         $attributes['_method'] = 'PATCH';
 
-        $attributes['contact']['currency'] = $attributes['contact']['currency_and_exchange_rate'];
-        $attributes['contact']['currencies'] = $attributes['contact']['currencies_and_exchange_rates'];
+        $attributes['contact']['currency'] = ($contact) ? $attributes['contact']['currency_and_exchange_rate']: [];
+        $attributes['contact']['currencies'] = ($contact) ? $attributes['contact']['currencies_and_exchange_rates'] : [];
 
         $attributes['taxes'] = json_decode('{}');
 
@@ -104,17 +108,17 @@ class SalesService
 
         try
         {
-            $Txn = new Sale;
+            $Txn = new Sales;
             $Txn->tenant_id = $data['tenant_id'];
             $Txn->created_by = Auth::id();
             $Txn->document_name = $data['document_name'];
-            $Txn->number = $data['number'];
+            // $Txn->number = $data['number'];
             $Txn->date = $data['date'];
             $Txn->debit_financial_account_code = $data['debit_financial_account_code'];
             $Txn->contact_id = $data['contact_id'];
             $Txn->contact_name = $data['contact_name'];
             $Txn->contact_address = $data['contact_address'];
-            $Txn->reference = $data['reference'];
+            // $Txn->reference = $data['reference'];
             $Txn->base_currency = $data['base_currency'];
             $Txn->quote_currency = $data['quote_currency'];
             $Txn->exchange_rate = $data['exchange_rate'];
@@ -122,9 +126,9 @@ class SalesService
             $Txn->total = $data['total'];
             $Txn->branch_id = $data['branch_id'];
             $Txn->store_id = $data['store_id'];
-            $Txn->due_date = $data['due_date'];
+            // $Txn->due_date = $data['due_date'];
             $Txn->contact_notes = $data['contact_notes'];
-            $Txn->terms_and_conditions = $data['terms_and_conditions'];
+            // $Txn->terms_and_conditions = $data['terms_and_conditions'];
             $Txn->status = $data['status'];
 
             $Txn->save();
@@ -140,14 +144,21 @@ class SalesService
             SalesLedgerService::store($data);
 
             //check status and update financial account and contact balances accordingly
-            $approval = SalesApprovalService::run($data);
-
             //update the status of the txn
-            if ($approval)
+            if (SalesApprovalService::run($data))
             {
                 $Txn->status = $data['status'];
                 $Txn->balances_where_updated = 1;
                 $Txn->save();
+            }
+
+            if (GoodsDeliveredInventoryService::update($data))
+            {
+                //do nothing 
+            }
+            else
+            {
+                DB::connection('tenant')->rollBack();
             }
 
             DB::connection('tenant')->commit();
@@ -159,20 +170,20 @@ class SalesService
         {
             DB::connection('tenant')->rollBack();
 
-            Log::critical('Fatal Internal Error: Failed to save invoice to database');
+            Log::critical('Fatal Internal Error: Failed to save Sales to database');
             Log::critical($e);
 
             //print_r($e); exit;
             if (App::environment('local'))
             {
-                self::$errors[] = 'Error: Failed to save invoice to database.';
+                self::$errors[] = 'Error: Failed to save Sales to database.';
                 self::$errors[] = 'File: ' . $e->getFile();
                 self::$errors[] = 'Line: ' . $e->getLine();
                 self::$errors[] = 'Message: ' . $e->getMessage();
             }
             else
             {
-                self::$errors[] = 'Fatal Internal Error: Failed to save invoice to database. Please contact Admin';
+                self::$errors[] = 'Fatal Internal Error: Failed to save Sales to database. Please contact Admin';
             }
 
             return false;
@@ -183,11 +194,11 @@ class SalesService
 
     public static function update($requestInstance)
     {
-        $data = InvoiceValidateService::run($requestInstance);
+        $data = SalesValidateService::run($requestInstance);
         //print_r($data); exit;
         if ($data === false)
         {
-            self::$errors = InvoiceValidateService::$errors;
+            self::$errors = SalesValidateService::$errors;
             return false;
         }
 
@@ -196,13 +207,14 @@ class SalesService
 
         try
         {
-            $Txn = Invoice::with('items', 'ledgers')->findOrFail($data['id']);
+            $originalTxn = Sales::with('items', 'ledgers')->findOrFail($data['id']);
 
-            if ($Txn->status == 'approved')
-            {
-                self::$errors[] = 'Approved Invoice cannot be not be edited';
-                return false;
-            }
+            $originalTxnArray = $originalTxn->toArray();
+
+            $Txn = $originalTxn->duplicate();
+
+            //reverse the inventory entries
+            GoodsDeliveredInventoryService::reverse($originalTxnArray);
 
             //Delete affected relations
             $Txn->ledgers()->delete();
@@ -211,21 +223,21 @@ class SalesService
             $Txn->comments()->delete();
 
             //reverse the account balances
-            AccountBalanceUpdateService::doubleEntry($Txn->toArray(), true);
+            AccountBalanceUpdateService::doubleEntry($originalTxnArray, true);
 
             //reverse the contact balances
-            ContactBalanceUpdateService::doubleEntry($Txn->toArray(), true);
+            ContactBalanceUpdateService::doubleEntry($originalTxnArray, true);
 
             $Txn->tenant_id = $data['tenant_id'];
             $Txn->created_by = Auth::id();
             $Txn->document_name = $data['document_name'];
-            $Txn->number = $data['number'];
+            // $Txn->number = $data['number'];
             $Txn->date = $data['date'];
             $Txn->debit_financial_account_code = $data['debit_financial_account_code'];
             $Txn->contact_id = $data['contact_id'];
             $Txn->contact_name = $data['contact_name'];
             $Txn->contact_address = $data['contact_address'];
-            $Txn->reference = $data['reference'];
+            // $Txn->reference = $data['reference'];
             $Txn->base_currency = $data['base_currency'];
             $Txn->quote_currency = $data['quote_currency'];
             $Txn->exchange_rate = $data['exchange_rate'];
@@ -233,9 +245,9 @@ class SalesService
             $Txn->total = $data['total'];
             $Txn->branch_id = $data['branch_id'];
             $Txn->store_id = $data['store_id'];
-            $Txn->due_date = $data['due_date'];
+            // $Txn->due_date = $data['due_date'];
             $Txn->contact_notes = $data['contact_notes'];
-            $Txn->terms_and_conditions = $data['terms_and_conditions'];
+            // $Txn->terms_and_conditions = $data['terms_and_conditions'];
             $Txn->status = $data['status'];
 
             $Txn->save();
@@ -245,21 +257,21 @@ class SalesService
             //print_r($data['items']); exit;
 
             //Save the items >> $data['items']
-            InvoiceItemService::store($data);
+            SalesItemService::store($data);
 
             //Save the ledgers >> $data['ledgers']; and update the balances
-            InvoiceLedgersService::store($data);
+            SalesLedgerService::store($data);
 
             //check status and update financial account and contact balances accordingly
-            $approval = InvoiceApprovalService::run($data);
-
             //update the status of the txn
-            if ($approval)
+            if (SalesApprovalService::run($data))
             {
                 $Txn->status = $data['status'];
                 $Txn->balances_where_updated = 1;
                 $Txn->save();
             }
+
+            $originalTxn->update(['status' => 'edited']);
 
             DB::connection('tenant')->commit();
 
@@ -270,20 +282,20 @@ class SalesService
         {
             DB::connection('tenant')->rollBack();
 
-            Log::critical('Fatal Internal Error: Failed to update invoice in database');
+            Log::critical('Fatal Internal Error: Failed to update sales in database');
             Log::critical($e);
 
             //print_r($e); exit;
             if (App::environment('local'))
             {
-                self::$errors[] = 'Error: Failed to update invoice in database.';
+                self::$errors[] = 'Error: Failed to update sales in database.';
                 self::$errors[] = 'File: ' . $e->getFile();
                 self::$errors[] = 'Line: ' . $e->getLine();
                 self::$errors[] = 'Message: ' . $e->getMessage();
             }
             else
             {
-                self::$errors[] = 'Fatal Internal Error: Failed to update invoice in database. Please contact Admin';
+                self::$errors[] = 'Fatal Internal Error: Failed to update sales in database. Please contact Admin';
             }
 
             return false;
@@ -298,25 +310,24 @@ class SalesService
 
         try
         {
-            $Txn = Invoice::with('items', 'ledgers')->findOrFail($id);
+            $Txn = Sales::with('items', 'ledgers')->findOrFail($id);
 
-            if ($Txn->status == 'approved')
-            {
-                self::$errors[] = 'Approved Invoice(s) cannot be not be deleted';
-                return false;
-            }
+            $txnArray = $Txn->toArray();
+
+            //reverse the inventory entries
+            GoodsDeliveredInventoryService::reverse($txnArray);
+
+            //reverse the account balances
+            AccountBalanceUpdateService::doubleEntry($txnArray, true);
+
+            //reverse the contact balances
+            ContactBalanceUpdateService::doubleEntry($txnArray, true);
 
             //Delete affected relations
             $Txn->ledgers()->delete();
             $Txn->items()->delete();
             $Txn->item_taxes()->delete();
             $Txn->comments()->delete();
-
-            //reverse the account balances
-            AccountBalanceUpdateService::doubleEntry($Txn, true);
-
-            //reverse the contact balances
-            ContactBalanceUpdateService::doubleEntry($Txn, true);
 
             $Txn->delete();
 
@@ -329,31 +340,40 @@ class SalesService
         {
             DB::connection('tenant')->rollBack();
 
-            Log::critical('Fatal Internal Error: Failed to delete invoice from database');
+            Log::critical('Fatal Internal Error: Failed to delete sale from database');
             Log::critical($e);
 
             //print_r($e); exit;
             if (App::environment('local'))
             {
-                self::$errors[] = 'Error: Failed to delete invoice from database.';
+                self::$errors[] = 'Error: Failed to delete sale from database.';
                 self::$errors[] = 'File: ' . $e->getFile();
                 self::$errors[] = 'Line: ' . $e->getLine();
                 self::$errors[] = 'Message: ' . $e->getMessage();
             }
             else
             {
-                self::$errors[] = 'Fatal Internal Error: Failed to delete invoice from database. Please contact Admin';
+                self::$errors[] = 'Fatal Internal Error: Failed to delete sale from database. Please contact Admin';
             }
 
             return false;
         }
     }
 
+    public static function destroyMany($ids)
+    {
+        foreach($ids as $id)
+        {
+            if(!self::destroy($id)) return false;
+        }
+        return true;
+    }
+
     public static function copy($id)
     {
         $taxes = Tax::all()->keyBy('code');
 
-        $txn = Invoice::findOrFail($id);
+        $txn = Sales::findOrFail($id);
         $txn->load('contact', 'items.taxes');
         $txn->setAppends(['taxes']);
 
@@ -402,11 +422,11 @@ class SalesService
 
     public static function approve($id)
     {
-        $Txn = Invoice::with(['ledgers'])->findOrFail($id);
+        $Txn = Sales::with(['ledgers'])->findOrFail($id);
 
         if (!in_array($Txn->status, config('financial-accounting.approvable_status')))
         {
-            self::$errors[] = $Txn->status . ' invoice cannot be approved';
+            self::$errors[] = $Txn->status . ' sales cannot be approved';
             return false;
         }
 
@@ -418,7 +438,7 @@ class SalesService
         try
         {
             $data['status'] = 'approved';
-            $approval = InvoiceApprovalService::run($data);
+            $approval = SalesApprovalService::run($data);
 
             //update the status of the txn
             if ($approval)
@@ -439,14 +459,14 @@ class SalesService
             //print_r($e); exit;
             if (App::environment('local'))
             {
-                self::$errors[] = 'DB Error: Failed to approve invoice.';
+                self::$errors[] = 'DB Error: Failed to approve sale.';
                 self::$errors[] = 'File: ' . $e->getFile();
                 self::$errors[] = 'Line: ' . $e->getLine();
                 self::$errors[] = 'Message: ' . $e->getMessage();
             }
             else
             {
-                self::$errors[] = 'Fatal Internal Error: Failed to approve invoice. Please contact Admin';
+                self::$errors[] = 'Fatal Internal Error: Failed to approve sale. Please contact Admin';
             }
 
             return false;
