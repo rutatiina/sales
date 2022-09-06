@@ -29,6 +29,7 @@ class SalesController extends Controller
     public function index(Request $request)
     {
         //return config('app.providers');
+        // return Sales::get()->sum('total');
 
         //load the vue version of the app
         if (!FacadesRequest::wantsJson())

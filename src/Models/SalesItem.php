@@ -24,6 +24,10 @@ class SalesItem extends Model
 
     protected $guarded = ['id'];
 
+    protected $appends = [
+        'inventory_tracking',
+    ];
+
     protected $casts = [
         'item_id' => 'integer',
     ];
@@ -50,14 +54,19 @@ class SalesItem extends Model
         }
     }
 
-    public function invoice()
-    {
-        return $this->belongsTo('Rutatiina\Sales\Models\Sale', 'sales_id');
-    }
-
     public function taxes()
     {
         return $this->hasMany('Rutatiina\Sales\Models\SalesItemTax', 'sales_item_id', 'id');
+    }
+
+    public function item()
+    {
+        return $this->belongsTo('Rutatiina\Item\Models\Item', 'item_id');
+    }
+
+    public function getInventoryTrackingAttribute()
+    {
+        return optional($this->item)->inventory_tracking;
     }
 
 }

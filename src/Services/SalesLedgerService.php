@@ -3,8 +3,9 @@
 namespace Rutatiina\Sales\Services;
 
 use Rutatiina\Sales\Models\SalesItem;
-use Rutatiina\Sales\Models\SalesItemTax;
 use Rutatiina\Sales\Models\SalesLedger;
+use Rutatiina\Sales\Models\SalesItemTax;
+use Rutatiina\FinancialAccounting\Models\FinancialAccountLedger;
 
 class SalesLedgerService
 {
@@ -22,8 +23,8 @@ class SalesLedgerService
         //Save the items >> $data['items']
         foreach ($data['ledgers'] as &$ledger)
         {
-            $ledger['sales_id'] = $data['id'];
-            SalesLedger::create($ledger);
+            $ledger['model_id'] = $data['id'];
+            FinancialAccountLedger::create($ledger);
         }
         unset($ledger);
 
