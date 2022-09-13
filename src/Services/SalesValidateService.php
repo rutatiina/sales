@@ -150,6 +150,7 @@ class SalesValidateService
                 'units' => $requestInstance->input('items.'.$key.'.units', null),
                 'batch' => $requestInstance->input('items.'.$key.'.batch', null), //this is used by the invetory module
                 // 'expiry' => $requestInstance->input('items.'.$key.'.expiry', null),
+                'inventory_tracking' => ($itemModel->inventory_tracking ?? 0),
                 'taxes' => $itemTaxes,
             ];
 
