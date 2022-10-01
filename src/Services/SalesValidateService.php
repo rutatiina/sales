@@ -22,7 +22,7 @@ class SalesValidateService
         //validate the data
         $customMessages = [
             //'total.in' => "Item total is invalid:\nItem total = item rate x item quantity",
-
+            'debit_financial_account_code.required' => "The payment receipt account field is required.",
             'items.*.taxes.*.code.required' => "Tax code is required",
             'items.*.taxes.*.total.required' => "Tax total is required",
             //'items.*.taxes.*.exclusive.required' => "Tax exclusive amount is required",
@@ -32,6 +32,7 @@ class SalesValidateService
             'contact_id' => 'nullable|numeric',
             'date' => 'required|date',
             'base_currency' => 'required',
+            'debit_financial_account_code' => 'required',
             'salesperson_contact_id' => 'numeric|nullable',
             'memo' => 'string|nullable',
 
@@ -84,7 +85,7 @@ class SalesValidateService
         // $data['number_length'] = $settings->minimum_number_length;
         // $data['number_postfix'] = $settings->number_postfix;
         $data['date'] = $requestInstance->input('date');
-        $data['debit_financial_account_code'] = $settings->financial_account_to_debit->code;
+        $data['debit_financial_account_code'] = $requestInstance->debit_financial_account_code;
         $data['contact_id'] = $requestInstance->contact_id;
         $data['contact_name'] = optional($contact)->name;
         $data['contact_address'] = trim(optional($contact)->shipping_address_street1 . ' ' . optional($contact)->shipping_address_street2);
@@ -168,7 +169,7 @@ class SalesValidateService
 
         //DR ledger
         $data['ledgers'][] = [
-            'financial_account_code' => $settings->financial_account_to_debit->code,
+            'financial_account_code' => $data['debit_financial_account_code'],
             'effect' => 'debit',
             'total' => $data['total'],
             'contact_id' => $data['contact_id']
