@@ -6,10 +6,12 @@ use Bkwld\Cloner\Cloneable;
 use Illuminate\Database\Eloquent\Model;
 use Rutatiina\Tenant\Scopes\TenantIdScope;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Rutatiina\Sales\Scopes\StatusEditedScope;
 
 class Sales extends Model
 {
+    use SoftDeletes;
     use LogsActivity;
     use Cloneable;
 
@@ -63,7 +65,7 @@ class Sales extends Model
         static::addGlobalScope(new TenantIdScope);
         static::addGlobalScope(new StatusEditedScope);
 
-        self::deleting(function($txn) { // before delete() method call this
+        self::deleted(function($txn) { // before delete() method call this
              $txn->items()->each(function($row) {
                 $row->delete();
              });
@@ -72,6 +74,18 @@ class Sales extends Model
              });
              $txn->ledgers()->each(function($row) {
                 $row->delete();
+             });
+        });
+
+        self::restored(function($txn) {
+             $txn->items()->each(function($row) {
+                $row->restore();
+             });
+             $txn->comments()->each(function($row) {
+                $row->restore();
+             });
+             $txn->ledgers()->each(function($row) {
+                $row->restore();
              });
         });
 
