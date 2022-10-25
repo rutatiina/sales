@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Rutatiina\Sales\Models\SalesSetting;
-use Rutatiina\GoodsReceived\Services\GoodsReceivedInvetoryService;
+use Rutatiina\GoodsReceived\Services\GoodsReceivedInventoryService;
 use Rutatiina\GoodsDelivered\Services\GoodsDeliveredInventoryService;
 use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
