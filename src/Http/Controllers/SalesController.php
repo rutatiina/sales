@@ -2,16 +2,17 @@
 
 namespace Rutatiina\Sales\Http\Controllers;
 
-use Rutatiina\Sales\Services\SalesService;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Request as FacadesRequest;
 use Rutatiina\Sales\Models\Sales;
-use Rutatiina\Item\Traits\ItemsSelect2DataTrait;
-use Rutatiina\Contact\Traits\ContactTrait;
+use Illuminate\Support\Facades\URL;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Rutatiina\Sales\Models\SalesSetting;
 use Yajra\DataTables\Facades\DataTables;
+use Rutatiina\Contact\Traits\ContactTrait;
+use Rutatiina\Sales\Services\SalesService;
+use Rutatiina\Item\Traits\ItemsSelect2DataTrait;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 
 class SalesController extends Controller
 {
@@ -65,8 +66,11 @@ class SalesController extends Controller
 
         $tenant = Auth::user()->tenant;
 
+        $settings = SalesSetting::first();
+
         $txnAttributes = (new Sales())->rgGetAttributes();
 
+        $txnAttributes['debit_financial_account_code'] = $settings->debit_financial_account_code;
         $txnAttributes['tenant_id'] = $tenant->id;
         $txnAttributes['created_by'] = Auth::id();
         $txnAttributes['number'] = SalesService::nextNumber();
@@ -87,7 +91,7 @@ class SalesController extends Controller
                 'displayTotal' => 0,
                 'name' => '',
                 'description' => '',
-                'rate' => 0,
+                'rate' => '',
                 'quantity' => 1,
                 'total' => 0,
                 'taxes' => [],
