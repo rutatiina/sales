@@ -26,6 +26,11 @@ class SalesSetting extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'debit_financial_account_code' => 'integer',
+        'credit_financial_account_code' => 'integer',
+    ];
+
     /**
      * The attributes that should be hidden for arrays.
      *
