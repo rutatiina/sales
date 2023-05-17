@@ -65,6 +65,7 @@ class SalesController extends Controller
         }
 
         $tenant = Auth::user()->tenant;
+        $nextNumber = SalesService::nextNumber(); //this makes sure the settings are created if none existent
 
         $settings = SalesSetting::first();
 
@@ -73,7 +74,7 @@ class SalesController extends Controller
         $txnAttributes['debit_financial_account_code'] = $settings->debit_financial_account_code;
         $txnAttributes['tenant_id'] = $tenant->id;
         $txnAttributes['created_by'] = Auth::id();
-        $txnAttributes['number'] = SalesService::nextNumber();
+        $txnAttributes['number'] = $nextNumber;
 
         $txnAttributes['status'] = 'approved';
         $txnAttributes['contact_id'] = '';
