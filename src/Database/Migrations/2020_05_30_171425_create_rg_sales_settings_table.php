@@ -19,7 +19,7 @@ class CreateRgSalesSettingsTable extends Migration
 
             //>> default columns
             $table->softDeletes();
-            $table->unsignedBigInteger('tenant_id');
+            $table->unsignedBigInteger('tenant_id')->unique();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             //<< default columns

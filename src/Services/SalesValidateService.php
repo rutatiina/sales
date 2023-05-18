@@ -81,7 +81,7 @@ class SalesValidateService
         $data['app'] = 'web';
         $data['document_name'] = $settings->document_name;
         // $data['number_prefix'] = $settings->number_prefix;
-        // $data['number'] = $requestInstance->input('number');
+        $data['number'] = $requestInstance->input('number');
         // $data['number_length'] = $settings->minimum_number_length;
         // $data['number_postfix'] = $settings->number_postfix;
         $data['date'] = $requestInstance->input('date');

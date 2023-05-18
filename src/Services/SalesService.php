@@ -25,14 +25,18 @@ class SalesService
 
     public static function settings()
     {
-        return SalesSetting::firstOrCreate([
-            'tenant_id' => session('tenant_id'),
-            'document_name' => 'Sales receipt',
-            'document_type' => 'receipt',
-            'number_prefix' => '',
-            'debit_financial_account_code' => 110100, //Cash and Cash Equivalents
-            'credit_financial_account_code' => 410100, //Sales Revenue
-        ]);
+        return SalesSetting::firstOrCreate(
+            ['tenant_id' => session('tenant_id')],
+            [
+                'tenant_id' => session('tenant_id'),
+                'document_name' => 'Sales receipt',
+                'document_type' => 'receipt',
+                'minimum_number_length' => 5,
+                'number_prefix' => '',
+                'debit_financial_account_code' => 110100, //Cash and Cash Equivalents
+                'credit_financial_account_code' => 410100, //Sales Revenue
+            ]
+        );
     }
 
     public static function nextNumber()
@@ -112,7 +116,7 @@ class SalesService
             $Txn->tenant_id = $data['tenant_id'];
             $Txn->created_by = Auth::id();
             $Txn->document_name = $data['document_name'];
-            // $Txn->number = $data['number'];
+            $Txn->number = $data['number'];
             $Txn->date = $data['date'];
             $Txn->debit_financial_account_code = $data['debit_financial_account_code'];
             $Txn->contact_id = $data['contact_id'];
