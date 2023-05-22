@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Rutatiina\Sales\Models\SalesSetting;
 use Rutatiina\GoodsReceived\Services\GoodsReceivedInventoryService;
+use Rutatiina\FinancialAccounting\Services\ItemBalanceUpdateService;
 use Rutatiina\GoodsDelivered\Services\GoodsDeliveredInventoryService;
 use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
@@ -232,6 +233,9 @@ class SalesService
             //reverse the contact balances
             ContactBalanceUpdateService::doubleEntry($originalTxnArray, true);
 
+            //Update the item balances
+            ItemBalanceUpdateService::entry($originalTxnArray, true);
+
             $Txn->tenant_id = $data['tenant_id'];
             $Txn->created_by = Auth::id();
             $Txn->document_name = $data['document_name'];
@@ -326,6 +330,9 @@ class SalesService
 
             //reverse the contact balances
             ContactBalanceUpdateService::doubleEntry($txnArray, true);
+
+            //Update the item balances
+            ItemBalanceUpdateService::entry($txnArray, true);
 
             //Delete affected relations
             $Txn->ledgers()->delete();
