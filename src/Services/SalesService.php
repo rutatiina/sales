@@ -145,12 +145,11 @@ class SalesService
             //Save the items >> $data['items']
             SalesItemService::store($data);
 
-            //Save the ledgers >> $data['ledgers']; and update the balances
-            SalesLedgerService::store($data);
+            $Txn = $Txn->refresh();
 
             //check status and update financial account and contact balances accordingly
             //update the status of the txn
-            if (SalesApprovalService::run($data))
+            if (SalesApprovalService::run($Txn))
             {
                 $Txn->status = $data['status'];
                 $Txn->balances_where_updated = 1;
@@ -267,12 +266,10 @@ class SalesService
             //Save the items >> $data['items']
             SalesItemService::store($data);
 
-            //Save the ledgers >> $data['ledgers']; and update the balances
-            SalesLedgerService::store($data);
+            $Txn = $Txn->refresh();
 
-            //check status and update financial account and contact balances accordingly
             //update the status of the txn
-            if (SalesApprovalService::run($data))
+            if (SalesApprovalService::run($Txn))
             {
                 $Txn->status = $data['status'];
                 $Txn->balances_where_updated = 1;

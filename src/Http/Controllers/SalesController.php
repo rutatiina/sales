@@ -144,13 +144,14 @@ class SalesController extends Controller
         }
 
         $txn = Sales::findOrFail($id);
-        $txn->load('contact', 'items.taxes', 'ledgers');
+        $txn->load('contact', 'items.taxes');
         $txn->setAppends([
             'taxes',
             'number_string',
             'total_in_words',
             'payment_status',
             'balance',
+            'ledgers'
         ]);
 
         return $txn->toArray();

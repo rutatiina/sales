@@ -34,6 +34,7 @@ class CreateRgSalesItemsTable extends Migration
             $table->string('description', 250)->nullable();
             $table->decimal('quantity', 61,4);
             $table->unsignedDecimal('rate', 20,5);
+            $table->unsignedDecimal('taxable_amount', 20, 5);
             $table->unsignedDecimal('total', 20, 5);
             $table->unsignedDecimal('discount_amount', 20, 5)->nullable();
             $table->decimal('units', 61, 4)->nullable();
