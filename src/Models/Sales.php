@@ -212,11 +212,6 @@ class Sales extends Model
         return $this->hasMany('Rutatiina\Sales\Models\SalesItem', 'sales_id')->orderBy('id', 'asc');
     }
 
-    // public function ledgers()
-    // {
-    //     return $this->hasMany('Rutatiina\Sales\Models\SalesLedger', 'sales_id')->orderBy('id', 'asc');
-    // }
-
     public function getLedgersAttribute($txn = null)
     {
         // if (!$txn) $this->items;
