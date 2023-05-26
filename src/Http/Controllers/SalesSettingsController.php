@@ -74,6 +74,7 @@ class SalesSettingsController extends Controller
         //$settings->maximum_number = $request->maximum_number;
         $settings->debit_financial_account_code = $request->debit_financial_account_code;
         $settings->credit_financial_account_code = $request->credit_financial_account_code;
+        $settings->default_contact = $request->default_contact;
         $settings->save();
 
         return [

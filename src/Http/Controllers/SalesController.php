@@ -13,6 +13,7 @@ use Rutatiina\Contact\Traits\ContactTrait;
 use Rutatiina\Sales\Services\SalesService;
 use Rutatiina\Item\Traits\ItemsSelect2DataTrait;
 use Illuminate\Support\Facades\Request as FacadesRequest;
+use Rutatiina\Contact\Models\Contact;
 
 class SalesController extends Controller
 {
@@ -69,6 +70,9 @@ class SalesController extends Controller
 
         $settings = SalesSetting::first();
 
+        //default contact
+        $defaultContact = Contact::select('id', 'tenant_id', 'name', 'display_name', 'currency')->find($settings->default_contact);
+
         $txnAttributes = (new Sales())->rgGetAttributes();
 
         $txnAttributes['debit_financial_account_code'] = $settings->debit_financial_account_code;
@@ -77,8 +81,8 @@ class SalesController extends Controller
         $txnAttributes['number'] = $nextNumber;
 
         $txnAttributes['status'] = 'approved';
-        $txnAttributes['contact_id'] = '';
-        $txnAttributes['contact'] = json_decode('{"currencies":[]}'); #required
+        $txnAttributes['contact_id'] = $settings->default_contact ?? '';
+        $txnAttributes['contact'] = $defaultContact ?? json_decode('{"currencies":[]}'); #required
         $txnAttributes['date'] = date('Y-m-d');
         $txnAttributes['base_currency'] = $tenant->base_currency;
         $txnAttributes['quote_currency'] = $tenant->base_currency;

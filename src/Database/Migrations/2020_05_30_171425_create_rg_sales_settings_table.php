@@ -38,6 +38,8 @@ class CreateRgSalesSettingsTable extends Migration
             $table->unsignedBigInteger('debit_financial_account_code')->nullable();
             $table->unsignedBigInteger('credit_financial_account_code')->nullable();
 
+            $table->unsignedBigInteger('contact_id')->nullable();
+
         });
     }
 
