@@ -56,6 +56,11 @@ class SalesItem extends Model
         }
     }
 
+    public function sale()
+    {
+        return $this->belongsTo('Rutatiina\Sales\Models\Sales', 'sales_id');
+    }
+
     public function taxes()
     {
         return $this->hasMany('Rutatiina\Sales\Models\SalesItemTax', 'sales_item_id', 'id');

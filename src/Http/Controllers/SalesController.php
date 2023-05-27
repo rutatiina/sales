@@ -14,6 +14,7 @@ use Rutatiina\Sales\Services\SalesService;
 use Rutatiina\Item\Traits\ItemsSelect2DataTrait;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use Rutatiina\Contact\Models\Contact;
+use Illuminate\Support\Str;
 
 class SalesController extends Controller
 {
@@ -46,6 +47,24 @@ class SalesController extends Controller
             $query->where(function ($q) use ($request)
             {
                 $q->where('contact_id', $request->contact);
+            });
+        }
+
+        if ($request->search)
+        {
+            $request->request->remove('page'); //this disables pagination from failing the search
+
+            $query->where(function($q) use ($request)
+            {
+                /*
+                $columns = (new Sales)->columns();
+                foreach($columns as $column)
+                {
+                    $q->orWhere($column, 'like', '%'.Str::replace(' ', '%', $request->search).'%');
+                }
+                //*/
+                $q->orWhere('number', 'like', '%'.Str::replace(' ', '%', $request->search).'%');
+                $q->orWhere('date', 'like', '%'.Str::replace(' ', '%', $request->search).'%');
             });
         }
 

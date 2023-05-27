@@ -4,6 +4,7 @@ namespace Rutatiina\Sales\Models;
 
 use Bkwld\Cloner\Cloneable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Rutatiina\Tenant\Scopes\TenantIdScope;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -52,6 +53,7 @@ class Sales extends Model
         'total_in_words',
         'payment_status',
         'balance',
+        'ledgers'
     ];
 
     /**
@@ -73,9 +75,6 @@ class Sales extends Model
              $txn->comments()->each(function($row) {
                 $row->delete();
              });
-             $txn->ledgers()->each(function($row) {
-                $row->delete();
-             });
         });
 
         self::restored(function($txn) {
@@ -83,9 +82,6 @@ class Sales extends Model
                 $row->restore();
              });
              $txn->comments()->each(function($row) {
-                $row->restore();
-             });
-             $txn->ledgers()->each(function($row) {
                 $row->restore();
              });
         });
@@ -224,11 +220,10 @@ class Sales extends Model
 
         foreach ($txn->items as $item)
         {
-            $taxable_amount = $item->taxable_amount ?? $item->total;
             //CR ledger
             $ledgers[$item->credit_financial_account_code]['financial_account_code'] = $item->credit_financial_account_code;
             $ledgers[$item->credit_financial_account_code]['effect'] = 'credit';
-            $ledgers[$item->credit_financial_account_code]['total'] = @$ledgers[$item->credit_financial_account_code]['total'] + $taxable_amount;
+            $ledgers[$item->credit_financial_account_code]['total'] = ($ledgers[$item->credit_financial_account_code]['total'] ?? 0) + $item->taxable_amount;
             $ledgers[$item->credit_financial_account_code]['contact_id'] = $txn->contact_id;
         }
 
@@ -292,6 +287,11 @@ class Sales extends Model
             }
         }
         return $grouped;
+    }
+
+    public function columns()
+    {
+        return Schema::connection($this->connection)->getColumnListing($this->table);
     }
 
 }

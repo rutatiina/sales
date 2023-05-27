@@ -211,7 +211,7 @@ class SalesService
 
         try
         {
-            $originalTxn = Sales::with('items', 'ledgers')->findOrFail($data['id']);
+            $originalTxn = Sales::with('items')->findOrFail($data['id']);
 
             $originalTxnArray = $originalTxn->toArray();
 
@@ -221,7 +221,6 @@ class SalesService
             GoodsDeliveredInventoryService::reverse($originalTxnArray);
 
             //Delete affected relations
-            $Txn->ledgers()->delete();
             $Txn->items()->delete();
             $Txn->item_taxes()->delete();
             $Txn->comments()->delete();
@@ -315,7 +314,7 @@ class SalesService
 
         try
         {
-            $Txn = Sales::with('items', 'ledgers')->findOrFail($id);
+            $Txn = Sales::with('items')->findOrFail($id);
 
             $txnArray = $Txn->toArray();
 
@@ -330,12 +329,6 @@ class SalesService
 
             //Update the item balances
             ItemBalanceUpdateService::entry($txnArray, true);
-
-            //Delete affected relations
-            $Txn->ledgers()->delete();
-            $Txn->items()->delete();
-            $Txn->item_taxes()->delete();
-            $Txn->comments()->delete();
 
             $Txn->delete();
 
@@ -430,7 +423,7 @@ class SalesService
 
     public static function approve($id)
     {
-        $Txn = Sales::with(['ledgers'])->findOrFail($id);
+        $Txn = Sales::findOrFail($id);
 
         if (!in_array($Txn->status, config('financial-accounting.approvable_status')))
         {
