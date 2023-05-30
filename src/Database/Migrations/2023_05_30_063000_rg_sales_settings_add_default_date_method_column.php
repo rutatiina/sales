@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class RgSalesSettingsAddDefaultContactColumn extends Migration
+class RgSalesSettingsAddDefaultDateMethodColumn extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,10 @@ class RgSalesSettingsAddDefaultContactColumn extends Migration
      */
     public function up()
     {
-        if (!Schema::connection('tenant')->hasColumn('rg_sales_settings', 'default_contact'))
+        if (!Schema::connection('tenant')->hasColumn('rg_sales_settings', 'default_date_method'))
         {
             Schema::connection('tenant')->table('rg_sales_settings', function (Blueprint $table) {
-                $table->unsignedBigInteger('default_contact')->nullable();
+                $table->string('default_date_method')->nullable();
             });
         }
     }
@@ -29,7 +29,7 @@ class RgSalesSettingsAddDefaultContactColumn extends Migration
     public function down()
     {
         Schema::connection('tenant')->table('rg_sales_settings', function (Blueprint $table) {
-            $table->dropColumn('default_contact');
+            $table->dropColumn('default_date_method');
         });
     }
 }

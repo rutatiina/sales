@@ -90,7 +90,7 @@ class SalesController extends Controller
         $settings = SalesSetting::first();
 
         //default contact
-        $defaultContact = Contact::select('id', 'tenant_id', 'name', 'display_name', 'currency')->find($settings->default_contact);
+        $defaultContact = Contact::select('id', 'tenant_id', 'name', 'display_name', 'currency')->find($settings->default_contact_id);
 
         $txnAttributes = (new Sales())->rgGetAttributes();
 
@@ -100,9 +100,9 @@ class SalesController extends Controller
         $txnAttributes['number'] = $nextNumber;
 
         $txnAttributes['status'] = 'approved';
-        $txnAttributes['contact_id'] = $settings->default_contact ?? '';
+        $txnAttributes['contact_id'] = $settings->default_contact_id ?? '';
         $txnAttributes['contact'] = $defaultContact ?? json_decode('{"currencies":[]}'); #required
-        $txnAttributes['date'] = date('Y-m-d');
+        $txnAttributes['date'] = $settings->default_date ?? date('Y-m-d');
         $txnAttributes['base_currency'] = $tenant->base_currency;
         $txnAttributes['quote_currency'] = $tenant->base_currency;
         $txnAttributes['taxes'] = json_decode('{}');

@@ -35,9 +35,21 @@ class SalesSettingsController extends Controller
             return view('ui.limitless::layout_2-ltr-default.appVue');
         }
 
+        $settings = SalesSetting::first();
+        $settings->defaultDateOptions = [
+            [
+                'value' => 'today', 
+                'name' => 'Current date'
+            ],
+            [
+                'value' => 'last_entry_date', 
+                'name' => 'Last sales entry date'
+            ],
+        ];
+
         return [
             'financial_accounts' => Account::all(),
-            'settings' => SalesSetting::first()
+            'settings' => $settings
         ];
     }
 
@@ -74,7 +86,8 @@ class SalesSettingsController extends Controller
         //$settings->maximum_number = $request->maximum_number;
         $settings->debit_financial_account_code = $request->debit_financial_account_code;
         $settings->credit_financial_account_code = $request->credit_financial_account_code;
-        $settings->default_contact = $request->default_contact;
+        $settings->default_contact_id = $request->default_contact_id;
+        $settings->default_date_method = $request->default_date_method;
         $settings->save();
 
         return [
